@@ -38,12 +38,16 @@
 #include "tgcreator/tgUtil.h"
 // The Bullet Physics library
 #include "btBulletDynamicsCommon.h"
+#include "LinearMath/btVector3.h"
+
 // The C++ Standard Library
 #include <iostream>
 #include <stdexcept>
 
-NestedStructureTestModel::NestedStructureTestModel(size_t segments) : 
+NestedStructureTestModel::NestedStructureTestModel(size_t segments, btVector3 origin, double rotation) :
     m_segments(segments),
+    origin(btVector3(origin.getX(), origin.getY(), origin.getZ())),
+    rotation(rotation),
     tgModel() 
 {
 }
@@ -162,7 +166,13 @@ void NestedStructureTestModel::setup(tgWorld& world)
     
     tgBasicActuator::Config actuatorConfig(1000, 10);
     spec.addBuilder("actuator", new tgBasicActuatorInfo(actuatorConfig));
-    
+
+    // Move the structure to its origin position
+    snake.addRotation(btVector3(0, 0, 0), btVector3(0, 1, 0), rotation);
+    snake.move(origin);
+    //std::cout << "rotation: " << rotation << std::endl;
+    //std::cout << "x: " << origin.getX() << "; z: " << origin.getZ() << std::endl;
+
     // Create your structureInfo
     tgStructureInfo structureInfo(snake, spec);
     // Use the structureInfo to build ourselves
@@ -173,7 +183,7 @@ void NestedStructureTestModel::setup(tgWorld& world)
     allActuators = tgCast::filter<tgModel, tgBasicActuator> (getDescendants());
     mapActuators(actuatorMap, *this);
 
-    trace(structureInfo, *this);
+    //trace(structureInfo, *this);
 
     // Actually setup the children
     tgModel::setup(world);

@@ -35,6 +35,9 @@
 #include <string>
 #include <vector>
 
+// Bullet physics
+#include "LinearMath/btVector3.h"
+
 // Forward declarations
 class tgBasicActuator;
 
@@ -58,7 +61,7 @@ public:
 	 * @param[in] segments, a positive integer dictating how many
 	 * rigid segments will be constructed. 
 	 */
-    NestedStructureTestModel(size_t segments);
+    NestedStructureTestModel(size_t segments, btVector3 origin, double rotation);
 	
 	/**
 	 * Nothing to do. Most functions already handled by tgModel::teardown
@@ -119,6 +122,12 @@ private:
      * The number of segments in the spine
      */
     const size_t m_segments;
+
+    // Origin position
+    btVector3 origin;
+
+    // Original rotation
+    double rotation;
 };
 
 #endif
