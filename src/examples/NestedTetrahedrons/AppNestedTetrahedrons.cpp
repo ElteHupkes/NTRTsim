@@ -51,70 +51,53 @@ int main(int argc, char** argv)
     std::cout << "StressTest" << std::endl;
 
     const double radius = 250;
-
-    // First create the world
-    const tgWorld::Config config(981, 50); // gravity, cm/sec^2
-    tgWorld world(config); 
-
-    // Second create the view
     const double stepSize = 1.0/500.0; //Seconds
-    tgSimViewGraphics view(world, stepSize);
-    //tgSimView view(world, stepSize);
-
-    // Third create the simulation
-    tgSimulation simulation(view);
-
-    double start = omp_get_wtime();
-    std::cout << start << std::endl;
+    int nSteps = 3000; // Number of steps in each episode, 3k is 6 seconds (timestep_physics*nSteps)
 
     // i = # of segments, j = # of bots
-//    for (int i = 4; i <= 12; i += 4) {
-//    	for (int j = 15; j <= 75; j += 15) {
-//
-//    	}
-//    }
-    // Fourth create the models with their controllers and add the models to the
-    // simulation
-    const int segments = 12;
+    for (unsigned int segments = 4; segments <= 12; segments += 4) {
+    	for (unsigned int nBots = 15; nBots <= 75; nBots += 15) {
+    	    // First create the world
+    	    const tgWorld::Config config(981, 50); // gravity, cm/sec^2
+    	    tgWorld world(config);
 
-    const int structures = 3;
+    	    // Second create the view
+    	    //tgSimViewGraphics view(world, stepSize);
+    	    tgSimView view(world, stepSize);
 
-    std::vector<NestedStructureTestModel*> models;
-    std::vector<NestedStructureSineWaves*> waves;
+    	    // Third create the simulation
+    	    tgSimulation simulation(view);
 
-    unsigned int i;
-    for (i = 0; i < structures; ++i) {
-    	double angle = 2 * i * M_PI/structures;
-    	btVector3 move(radius * cos(angle), 0, radius * sin(angle));
-    	NestedStructureTestModel* model = new NestedStructureTestModel(segments, move,
-    			1.5 * M_PI - angle - (0.1 - 0.2 * rand() / (RAND_MAX + 1.0)));
-    	NestedStructureSineWaves* wave = new NestedStructureSineWaves();
-    	model->attach(wave);
-    	simulation.addModel(model);
+    	    // Fourth create the models with their controllers and add the models to the
+    	    // simulation
+    	    std::vector<NestedStructureSineWaves*> waves;
+    	    waves.reserve(nBots);
 
-    	models.push_back(model);
-    	waves.push_back(wave);
-    }
+    	    unsigned int i;
+    	    for (i = 0; i < nBots; ++i) {
+    	    	double angle = 2 * i * M_PI/nBots;
+    	    	btVector3 move(radius * cos(angle), 0, radius * sin(angle));
 
-    int nEpisodes = 1;
-    int nSteps = 3000; // Number of steps in each episode, 60k is 100 seconds (timestep_physics*nSteps)
-    for (int i=0; i<nEpisodes; i++) {
-        simulation.run(nSteps);
-        simulation.reset();
-    }
+    	    	NestedStructureTestModel* model = new NestedStructureTestModel(segments, move,
+    	    			1.5 * M_PI - angle - (0.1 - 0.2 * rand() / (RAND_MAX + 1.0)));
+    	    	NestedStructureSineWaves* wave = new NestedStructureSineWaves();
+    	    	model->attach(wave);
+    	    	simulation.addModel(model);
 
-//    NestedStructureTestModel* myModel = new NestedStructureTestModel(segments);
-//    NestedStructureSineWaves* const pMuscleControl =
-//      new NestedStructureSineWaves();
-//    myModel->attach(pMuscleControl);
-//    simulation.addModel(myModel);
-	
-	// Run until the user stops
-//    simulation.run();
+    	    	waves.push_back(wave);
+    	    }
 
-    for (i = 0; i < structures; ++i) {
-    	delete models[i];
-    	delete waves[i];
+    	    std::cout << "Simulating " << nBots << " bots with " << segments << " segments..." << std::endl;
+    	    double start = omp_get_wtime();
+			simulation.run(nSteps);
+			double end = omp_get_wtime();
+			std::cout << "Bots: " << nBots << ", segments: " << segments << ", time: " << (end - start) << std::endl;
+
+			// Models are deleted in simulation teardown, minds are not
+    	    for (unsigned i = 0; i < nBots; ++i) {
+    	    	delete waves[i];
+    	    }
+    	}
     }
 
     //Teardown is handled by delete, so that should be automatic

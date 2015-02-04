@@ -140,7 +140,7 @@ void NestedStructureTestModel::setup(tgWorld& world)
 {
     const double edge = 30.0;
     const double height = tgUtil::round(std::sqrt(3.0)/2 * edge);
-    std::cout << "edge: " << edge << "; height: " << height << std::endl;
+    //std::cout << "edge: " << edge << "; height: " << height << std::endl;
 
     // Create the tetrahedra
     tgStructure tetra;
