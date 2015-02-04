@@ -50,9 +50,11 @@ int main(int argc, char** argv)
 {
     std::cout << "StressTest" << std::endl;
 
-    const double radius = 250;
+    const double radius = 450;
     const double stepSize = 1.0/500.0; //Seconds
     int nSteps = 3000; // Number of steps in each episode, 3k is 6 seconds (timestep_physics*nSteps)
+
+    bool visualize = argc > 1 && (std::string(argv[1]) == "--visualize");
 
     // i = # of segments, j = # of bots
     for (unsigned int segments = 4; segments <= 12; segments += 4) {
@@ -62,11 +64,16 @@ int main(int argc, char** argv)
     	    tgWorld world(config);
 
     	    // Second create the view
-    	    //tgSimViewGraphics view(world, stepSize);
-    	    tgSimView view(world, stepSize);
+    	    tgSimView* view;
+    	    if (visualize) {
+    	    	view = new tgSimViewGraphics(world, stepSize);
+    	    	std::cout << "Enabling visualization" << std::endl;
+    	    } else {
+    	    	view = new tgSimView(world, stepSize);
+    	    }
 
     	    // Third create the simulation
-    	    tgSimulation simulation(view);
+    	    tgSimulation simulation(*view);
 
     	    // Fourth create the models with their controllers and add the models to the
     	    // simulation
@@ -97,6 +104,8 @@ int main(int argc, char** argv)
     	    for (unsigned i = 0; i < nBots; ++i) {
     	    	delete waves[i];
     	    }
+
+    	    delete view;
     	}
     }
 
